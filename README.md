@@ -27,9 +27,9 @@ graph=AB5,BC4,CD8,DC8,DE6,AD5,CE2,EB3,AE7
 
 The above format is assumed. Meaning it shouldn't be altered. There's a validator that checks the format.
 
-This is pulled into `GraphConfiguration.java` class and creates a bean of our Graph data structure (where `GraphConverter.java` transforms the graph string into the data structure we need) that we can pull directly into our `GraphDao.java` class aka our "pseudo DAO" (Data Access Object).
+This is pulled into `GraphConfiguration.java` class and creates a bean of our Graph data structure (where `GraphConverter.java` transforms the graph string into the data structure we need) that we can pull directly into our `GraphService.java` class that controlls the logic.
 
-The pseudo DAO is our interface to the graph library. This contains four operations that are currently in use:
+The service is our interface to the graph library. This contains four operations that are currently in use:
 
 1) *findTotalDistanceOfPath()* - simply calculates weight of edges as it travels along nodes in a path
 2) *findShortestDistanceBetweenTwoNodes()* - utilizes JGraphT's `DijkstraShortestPath` algorithm to calculate the shortest total distance between two nodes
@@ -98,6 +98,6 @@ The total distance of A,B,C is 9
 
 ## Testing
 
-There are currently tests located in `src/test/java/example/dao/GraphDaoTest.java` that test against example scenarios.
+There are currently tests located in `src/test/java/example/service/GraphServiceTest.java` that test against example scenarios.
 
 Debugging was done through VS Code.

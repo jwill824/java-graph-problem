@@ -6,7 +6,7 @@ import com.beust.jcommander.internal.Lists;
 import com.example.builder.GraphBuilder;
 import com.example.commands.DistanceCommand;
 import com.example.commands.PathsCommand;
-import com.example.dao.GraphDao;
+import com.example.service.GraphService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -14,10 +14,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class ConsoleApplication implements CommandLineRunner {
-  private GraphDao dao;
+  private GraphService service;
 
-  public ConsoleApplication(final GraphDao dao) {
-    this.dao = dao;
+  public ConsoleApplication(final GraphService service) {
+    this.service = service;
   }
 
   public static void main(String[] args) {
@@ -49,7 +49,7 @@ public class ConsoleApplication implements CommandLineRunner {
           }
 
           if (StringUtils.isNotBlank(distanceCommand.getGraph())) {
-            dao = new GraphDao(new GraphBuilder(distanceCommand.getGraph()).build());
+            service = new GraphService(new GraphBuilder(distanceCommand.getGraph()).build());
           }
 
           if (StringUtils.isNotBlank(distanceCommand.getPath())) {
@@ -57,7 +57,7 @@ public class ConsoleApplication implements CommandLineRunner {
                 String.format(
                     "The total distance of %s is %s",
                     distanceCommand.getPath(),
-                    dao.findTotalDistanceOfPath(
+                    service.findTotalDistanceOfPath(
                         Lists.newArrayList(distanceCommand.getPath().split(",")))));
             break;
           }
@@ -70,7 +70,7 @@ public class ConsoleApplication implements CommandLineRunner {
                     "The shortest distance between %s and %s is %s",
                     distanceCommand.getStartNode(),
                     distanceCommand.getEndNode(),
-                    dao.findShortestDistanceBetweenTwoNodes(
+                    service.findShortestDistanceBetweenTwoNodes(
                         distanceCommand.getStartNode(), distanceCommand.getEndNode())));
             break;
           }
@@ -84,7 +84,7 @@ public class ConsoleApplication implements CommandLineRunner {
           }
 
           if (StringUtils.isNotBlank(pathsCommand.getGraph())) {
-            dao = new GraphDao(new GraphBuilder(pathsCommand.getGraph()).build());
+            service = new GraphService(new GraphBuilder(pathsCommand.getGraph()).build());
           }
 
           if (pathsCommand.getDistance() != null) {
@@ -99,7 +99,7 @@ public class ConsoleApplication implements CommandLineRunner {
                             ? "less than"
                             : "equal to or less than",
                     pathsCommand.getDistance(),
-                    dao.findNumberOfPathsBetweenTwoNodesGivenDistance(
+                    service.findNumberOfPathsBetweenTwoNodesGivenDistance(
                         pathsCommand.getStartNode(),
                         pathsCommand.getEndNode(),
                         pathsCommand.getDistance(),
@@ -119,7 +119,7 @@ public class ConsoleApplication implements CommandLineRunner {
                             ? "less than"
                             : "equal to or less than",
                     pathsCommand.getStops(),
-                    dao.findNumberOfPathsBetweenTwoNodesGivenStops(
+                    service.findNumberOfPathsBetweenTwoNodesGivenStops(
                         pathsCommand.getStartNode(),
                         pathsCommand.getEndNode(),
                         pathsCommand.getStops(),

@@ -1,4 +1,4 @@
-package com.example.dao;
+package com.example.service;
 
 import java.util.List;
 import org.jgrapht.Graph;
@@ -9,11 +9,11 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GraphDao {
+public class GraphService {
   private Graph<String, DefaultWeightedEdge> graph;
   private AllDirectedPaths<String, DefaultWeightedEdge> directedPaths;
 
-  public GraphDao(final Graph<String, DefaultWeightedEdge> graph) {
+  public GraphService(final Graph<String, DefaultWeightedEdge> graph) {
     this.graph = graph;
     this.directedPaths = new AllDirectedPaths<String, DefaultWeightedEdge>(graph);
   }
