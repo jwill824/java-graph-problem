@@ -57,27 +57,33 @@ public class GraphDao {
     List<GraphPath<String, DefaultWeightedEdge>> graphPaths =
         directedPaths.getAllPaths(sourceNode, targetNode, false, 20);
 
-    long result = 0;
+    Integer result = 0;
 
     switch (comparator) {
       case 0: // equals
-        result = graphPaths.stream().filter(graphPath -> graphPath.getWeight() == distance).count();
+        result =
+            (int)
+                graphPaths.stream().filter(graphPath -> graphPath.getWeight() == distance).count();
         break;
       case 1: // less than
         result =
-            graphPaths.stream()
-                .filter(graphPath -> graphPath.getLength() > 1 && graphPath.getWeight() < distance)
-                .count();
+            (int)
+                graphPaths.stream()
+                    .filter(
+                        graphPath -> graphPath.getLength() > 1 && graphPath.getWeight() < distance)
+                    .count();
         break;
       case 2: // less than or equal to
         result =
-            graphPaths.stream()
-                .filter(graphPath -> graphPath.getLength() > 1 && graphPath.getWeight() <= distance)
-                .count();
+            (int)
+                graphPaths.stream()
+                    .filter(
+                        graphPath -> graphPath.getLength() > 1 && graphPath.getWeight() <= distance)
+                    .count();
         break;
     }
 
-    return Long.valueOf(result).intValue();
+    return result;
   }
 
   public Integer findNumberOfPathsBetweenTwoNodesGivenStops(
@@ -85,26 +91,30 @@ public class GraphDao {
     List<GraphPath<String, DefaultWeightedEdge>> graphPaths =
         directedPaths.getAllPaths(sourceNode, targetNode, false, stops);
 
-    long result = 0;
+    Integer result = 0;
 
     switch (comparator) {
       case 0: // equals
-        result = graphPaths.stream().filter(graphPath -> graphPath.getLength() == stops).count();
+        result =
+            (int) graphPaths.stream().filter(graphPath -> graphPath.getLength() == stops).count();
         break;
       case 1: // less than
         result =
-            graphPaths.stream()
-                .filter(graphPath -> graphPath.getLength() > 1 && graphPath.getLength() < stops)
-                .count();
+            (int)
+                graphPaths.stream()
+                    .filter(graphPath -> graphPath.getLength() > 1 && graphPath.getLength() < stops)
+                    .count();
         break;
       case 2: // less than or equal to
         result =
-            graphPaths.stream()
-                .filter(graphPath -> graphPath.getLength() > 1 && graphPath.getLength() <= stops)
-                .count();
+            (int)
+                graphPaths.stream()
+                    .filter(
+                        graphPath -> graphPath.getLength() > 1 && graphPath.getLength() <= stops)
+                    .count();
         break;
     }
 
-    return Long.valueOf(result).intValue();
+    return result;
   }
 }
