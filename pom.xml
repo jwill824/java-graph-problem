@@ -54,11 +54,6 @@
       <version>${guava.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.jgrapht</groupId>
-      <artifactId>jgrapht-core</artifactId>
-      <version>${jgrapht-core.version}</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
