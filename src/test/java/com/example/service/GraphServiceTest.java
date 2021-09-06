@@ -3,9 +3,9 @@ package com.example.service;
 import static org.junit.Assert.assertEquals;
 
 import com.example.builder.GraphBuilder;
+import com.example.model.Node;
 import com.google.common.collect.Lists;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultWeightedEdge;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,8 +14,7 @@ public class GraphServiceTest {
 
   @Before
   public void setup() {
-    Graph<String, DefaultWeightedEdge> graph =
-        new GraphBuilder("AB5,BC4,CD8,DC8,DE6,AD5,CE2,EB3,AE7").build();
+    Map<String, Node> graph = new GraphBuilder("AB5,BC4,CD8,DC8,DE6,AD5,CE2,EB3,AE7").build();
     service = new GraphService(graph);
   }
 
@@ -57,6 +56,12 @@ public class GraphServiceTest {
   }
 
   @Test
+  public void findNumberOfPathsBetweenTwoNodesGivenDistance_Given_CC301_Expect_7() {
+    assertEquals(
+        7, service.findNumberOfPathsBetweenTwoNodesGivenDistance("C", "C", 30, 1).intValue());
+  }
+
+  @Test
   public void findShortestPathBetweenTwoNodes_Given_CC_Expect_9() {
     assertEquals(9, service.findShortestDistanceBetweenTwoNodes("C", "C").intValue());
   }
@@ -64,11 +69,5 @@ public class GraphServiceTest {
   @Test
   public void findShortestPathBetweenTwoNodes_Given_AC_Expect_9() {
     assertEquals(9, service.findShortestDistanceBetweenTwoNodes("A", "C").intValue());
-  }
-
-  @Test
-  public void findNumberOfPathsBetweenTwoNodesGivenDistance_Given_CC301_Expect_7() {
-    assertEquals(
-        7, service.findNumberOfPathsBetweenTwoNodesGivenDistance("C", "C", 30, 1).intValue());
   }
 }

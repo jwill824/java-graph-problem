@@ -1,37 +1,53 @@
 package com.example.builder;
 
+import com.example.model.Node;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 public class GraphBuilder {
-  private Graph<String, DefaultWeightedEdge> graph;
+  private Map<String, Node> graph = new HashMap<>();
 
   public GraphBuilder(final String graphString) {
-    graph = new SimpleDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
-
     if (StringUtils.isNotBlank(graphString)) {
+      List<Node> vertices =
+          Stream.of(graphString.split(","))
+              .map(letter -> letter.split(""))
+              .flatMap(Arrays::stream)
+              .distinct()
+              .filter(edge -> edge.matches("[A-Z]+"))
+              .map(Node::new)
+              .collect(Collectors.toList());
+
       Stream.of(graphString.split(","))
           .forEach(
-              str -> {
-                if (!graph.containsVertex(Character.toString(str.charAt(0)))) {
-                  graph.addVertex(Character.toString(str.charAt(0)));
-                }
-                if (!graph.containsVertex(Character.toString(str.charAt(1)))) {
-                  graph.addVertex(Character.toString(str.charAt(1)));
-                }
-                graph.addEdge(Character.toString(str.charAt(0)), Character.toString(str.charAt(1)));
-                graph.setEdgeWeight(
-                    Character.toString(str.charAt(0)),
-                    Character.toString(str.charAt(1)),
-                    Double.parseDouble(Character.toString(str.charAt(2))));
+              edge -> {
+                vertices.forEach(
+                    vertex -> {
+                      if (vertex.getName().equals(Character.toString(edge.charAt(0)))) {
+                        Optional<Node> dest =
+                            vertices.stream()
+                                .filter(v -> v.getName().equals(Character.toString(edge.charAt(1))))
+                                .findFirst();
+                        if (!dest.isPresent()) {
+                          dest = Optional.of(new Node(Character.toString(edge.charAt(1))));
+                        }
+                        vertex.addWeightedEdge(
+                            dest.get(), Integer.parseInt(Character.toString(edge.charAt(2))));
+                      }
+                    });
               });
+
+      vertices.stream().forEach(vertex -> graph.put(vertex.getName(), vertex));
     }
   }
 
-  public Graph<String, DefaultWeightedEdge> build() {
+  public Map<String, Node> build() {
     return graph;
   }
 }
