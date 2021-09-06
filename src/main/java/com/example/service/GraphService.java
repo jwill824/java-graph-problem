@@ -1,120 +1,169 @@
 package com.example.service;
 
+import com.example.model.Edge;
+import com.example.model.Node;
 import java.util.List;
-import org.jgrapht.Graph;
-import org.jgrapht.GraphPath;
-import org.jgrapht.alg.shortestpath.AllDirectedPaths;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
-import org.jgrapht.graph.DefaultWeightedEdge;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GraphService {
-  private Graph<String, DefaultWeightedEdge> graph;
-  private AllDirectedPaths<String, DefaultWeightedEdge> directedPaths;
+  private Map<String, Node> graph;
 
-  public GraphService(final Graph<String, DefaultWeightedEdge> graph) {
+  public GraphService(final Map<String, Node> graph) {
     this.graph = graph;
-    this.directedPaths = new AllDirectedPaths<String, DefaultWeightedEdge>(graph);
   }
 
   public String findTotalDistanceOfPath(final List<String> path) {
     int totalDistance = 0;
 
-    List<String> route = path;
-    String node = route.get(0);
-    route.remove(0);
+    List<Node> nodes = path.stream().map(node -> graph.get(node)).collect(Collectors.toList());
 
-    for (String nextNode : route) {
-      DefaultWeightedEdge edge = graph.getEdge(node, nextNode);
-
-      if (edge == null) {
-        return "NO SUCH ROUTE";
+    for (int i = 0; i < path.size() - 1; i++) {
+      try {
+        totalDistance += nodes.get(i).getWeight(nodes.get(i + 1));
+      } catch (NoSuchElementException ex) {
+        return ex.getMessage();
       }
-
-      totalDistance += graph.getEdgeWeight(edge);
-      node = nextNode;
     }
 
-    return Integer.toString(totalDistance);
+    return String.valueOf(totalDistance);
   }
 
   public Integer findShortestDistanceBetweenTwoNodes(
       final String sourceNode, final String targetNode) {
-    if (sourceNode.equals(targetNode)) {
-      return directedPaths.getAllPaths(sourceNode, targetNode, false, 20).stream()
-          .filter(graphPath -> graphPath.getLength() > 1)
-          .mapToInt(v -> (int) v.getWeight())
-          .min()
-          .getAsInt();
+    Node source = graph.get(sourceNode);
+    Node target = graph.get(targetNode);
+    if (source.equals(target)) {
+      return searchMinDistanceLoop(Integer.MAX_VALUE, source, target, 0);
     }
-
-    return (int) DijkstraShortestPath.findPathBetween(graph, sourceNode, targetNode).getWeight();
+    return searchMinDistance(Integer.MAX_VALUE, source, target, 0);
   }
 
   public Integer findNumberOfPathsBetweenTwoNodesGivenDistance(
       final String sourceNode, final String targetNode, final int distance, final int comparator) {
-    List<GraphPath<String, DefaultWeightedEdge>> graphPaths =
-        directedPaths.getAllPaths(sourceNode, targetNode, false, 20);
-
-    Integer result = 0;
-
-    switch (comparator) {
-      case 0: // equals
-        result =
-            (int)
-                graphPaths.stream().filter(graphPath -> graphPath.getWeight() == distance).count();
-        break;
-      case 1: // less than
-        result =
-            (int)
-                graphPaths.stream()
-                    .filter(
-                        graphPath -> graphPath.getLength() > 1 && graphPath.getWeight() < distance)
-                    .count();
-        break;
-      case 2: // less than or equal to
-        result =
-            (int)
-                graphPaths.stream()
-                    .filter(
-                        graphPath -> graphPath.getLength() > 1 && graphPath.getWeight() <= distance)
-                    .count();
-        break;
-    }
-
-    return result;
+    Node source = graph.get(sourceNode);
+    Node target = graph.get(targetNode);
+    return searchDistance(0, source, target, 0, distance, comparator);
   }
 
   public Integer findNumberOfPathsBetweenTwoNodesGivenStops(
       final String sourceNode, final String targetNode, final int stops, final int comparator) {
-    List<GraphPath<String, DefaultWeightedEdge>> graphPaths =
-        directedPaths.getAllPaths(sourceNode, targetNode, false, stops);
+    Node source = graph.get(sourceNode);
+    Node target = graph.get(targetNode);
+    return searchStops(0, source, target, 0, stops, comparator);
+  }
 
-    Integer result = 0;
+  private Integer searchMinDistance(
+      Integer minDistance, Node source, Node target, Integer distance) {
+    for (Edge edge : source.getNeighbors()) {
+      Node neighbor = edge.getTarget();
+      int total = distance + edge.getWeight();
 
-    switch (comparator) {
-      case 0: // equals
-        result =
-            (int) graphPaths.stream().filter(graphPath -> graphPath.getLength() == stops).count();
+      if (source.equals(target)) {
         break;
-      case 1: // less than
-        result =
-            (int)
-                graphPaths.stream()
-                    .filter(graphPath -> graphPath.getLength() > 1 && graphPath.getLength() < stops)
-                    .count();
+      }
+
+      if (neighbor.equals(target) && total < minDistance) {
+        minDistance = total;
         break;
-      case 2: // less than or equal to
-        result =
-            (int)
-                graphPaths.stream()
-                    .filter(
-                        graphPath -> graphPath.getLength() > 1 && graphPath.getLength() <= stops)
-                    .count();
-        break;
+      }
+
+      minDistance = searchMinDistance(minDistance, neighbor, target, total);
     }
 
-    return result;
+    return minDistance;
+  }
+
+  private Integer searchMinDistanceLoop(
+      Integer minDistance, Node source, Node target, Integer distance) {
+    for (Edge edge : source.getNeighbors()) {
+      Node neighbor = edge.getTarget();
+      int total = distance + edge.getWeight();
+
+      if (neighbor.equals(target) && total < minDistance) {
+        minDistance = total;
+        break;
+      }
+
+      minDistance = searchMinDistanceLoop(minDistance, neighbor, target, total);
+    }
+
+    return minDistance;
+  }
+
+  private Integer searchStops(
+      int count, Node source, Node target, Integer stops, Integer maxStops, Integer comparator) {
+    for (Edge edge : source.getNeighbors()) {
+      Node neighbor = edge.getTarget();
+      int total = stops + 1;
+
+      if (total > maxStops) {
+        break;
+      }
+
+      boolean compare = false;
+
+      switch (comparator) {
+        case 0:
+          compare = total == maxStops;
+          break;
+        case 1:
+          compare = total < maxStops;
+          break;
+        case 2:
+          compare = total <= maxStops;
+          break;
+      }
+
+      if (neighbor.equals(target) && compare) {
+        count++;
+      }
+
+      count = searchStops(count, neighbor, target, total, maxStops, comparator);
+    }
+
+    return count;
+  }
+
+  private Integer searchDistance(
+      int count,
+      Node source,
+      Node target,
+      Integer distance,
+      Integer maxDistance,
+      Integer comparator) {
+    for (Edge edge : source.getNeighbors()) {
+      Node neighbor = edge.getTarget();
+      int total = distance + edge.getWeight();
+
+      if (total > maxDistance) {
+        break;
+      }
+
+      boolean compare = false;
+
+      switch (comparator) {
+        case 0:
+          compare = total == maxDistance;
+          break;
+        case 1:
+          compare = total < maxDistance;
+          break;
+        case 2:
+          compare = total <= maxDistance;
+          break;
+      }
+
+      if (neighbor.equals(target) && compare) {
+        count++;
+      }
+
+      count = searchDistance(count, neighbor, target, total, maxDistance, comparator);
+    }
+
+    return count;
   }
 }

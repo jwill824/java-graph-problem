@@ -1,6 +1,6 @@
 # Graph Calculator (of sorts)
 
-A Java/SpringBoot Command Line application that interfaces with JGraphT to get certain graph calculations.
+A Java/SpringBoot Command Line application that interfaces graph calculations
 
 Demonstrates:
 
@@ -8,16 +8,13 @@ Demonstrates:
 * SpringBoot 2.x (**full disclosure: this does not need to be a SpringBoot app at all, but is for demonstration**)
 * JUnit 4.x
 * [JCommander](https://jcommander.org/)
-* [JGraphT](https://jgrapht.org/)
 
 ## Overview
 
 In the `application.properties` file, there's a property that is assigned a graph that is:
 
 a) directional
-
 b) cyclical
-
 c) weighted
 
 Example:
@@ -32,9 +29,9 @@ This is pulled into `GraphConfiguration.java` class and creates a bean of our Gr
 The service is our interface to the graph library. This contains four operations that are currently in use:
 
 1) *findTotalDistanceOfPath()* - simply calculates weight of edges as it travels along nodes in a path
-2) *findShortestDistanceBetweenTwoNodes()* - utilizes JGraphT's `DijkstraShortestPath` algorithm to calculate the shortest total distance between two nodes
-3) *findNumberOfPathsBetweenTwoNodesGivenDistance()* - utilizes JGraphT's `AllDirectedPaths` class to populate a `GraphPath` structure that allows us to do Java Stream filters on it
-4) *findNumberOfPathsBetweenTwoNodesGivenStops()* - - utilizes JGraphT's `AllDirectedPaths` class to populate a `GraphPath` structure that allows us to do Java Stream filters on it
+2) *findShortestDistanceBetweenTwoNodes()* - recursive depth first search with min total calculated
+3) *findNumberOfPathsBetweenTwoNodesGivenDistance()* - recursive depth first search that counts path within constraint of total distance
+4) *findNumberOfPathsBetweenTwoNodesGivenStops()* - recursive depth first search that counts path within constraint of total vertices traveled
 
 Now we can move on to the command line app, located in `ConsoleApplication.java`. Here we're using JCommander to help us parse command line arguments. It's currently broken up between two commands:
 

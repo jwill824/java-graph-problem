@@ -5,7 +5,7 @@
 
   <groupId>com.example</groupId>
   <artifactId>graph-problem</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>jar</packaging>
 
   <parent>
@@ -52,11 +52,6 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jgrapht</groupId>
-      <artifactId>jgrapht-core</artifactId>
-      <version>${jgrapht-core.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
