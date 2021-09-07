@@ -1,6 +1,5 @@
 package com.example.service;
 
-import com.beust.jcommander.internal.Lists;
 import com.example.model.Edge;
 import com.example.model.Node;
 import java.util.List;
@@ -41,17 +40,20 @@ public class GraphService {
   }
 
   public Integer findNumberOfPathsBetweenTwoNodesGivenDistance(
-      final String sourceNode, final String targetNode, final int distance, final int comparator) {
+      final String sourceNode,
+      final String targetNode,
+      final int maxDistance,
+      final int comparator) {
     Node source = graph.get(sourceNode);
     Node target = graph.get(targetNode);
-    return searchDistance(0, source, target, 0, distance, comparator);
+    return searchDistance(0, source, target, 0, 0, maxDistance, comparator);
   }
 
   public Integer findNumberOfPathsBetweenTwoNodesGivenStops(
-      final String sourceNode, final String targetNode, final int stops, final int comparator) {
+      final String sourceNode, final String targetNode, final int maxStops, final int comparator) {
     Node source = graph.get(sourceNode);
     Node target = graph.get(targetNode);
-    return searchStops(0, source, target, 0, stops, comparator);
+    return searchStops(0, source, target, 0, 0, maxStops, comparator);
   }
 
   private Integer searchMinDistance(
@@ -61,22 +63,7 @@ public class GraphService {
       prevDistance = currDistance;
     }
 
-    // re-arrange neighbors list to add node that matches target first
-    if (source.getNeighbors().stream().anyMatch(e -> e.getTarget().equals(target))) {
-      Edge edge =
-          source.getNeighbors().stream()
-              .filter(e -> e.getTarget().equals(target))
-              .findFirst()
-              .get();
-      List<Edge> others =
-          source.getNeighbors().stream()
-              .filter(e -> !e.getTarget().equals(target))
-              .collect(Collectors.toList());
-      List<Edge> edges = Lists.newArrayList();
-      edges.add(edge);
-      edges.addAll(others);
-      source.setNeighbors(edges);
-    }
+    source.shiftEdgesToTarget(target);
 
     for (Edge edge : source.getNeighbors()) {
       Node neighbor = edge.getTarget();
@@ -101,26 +88,39 @@ public class GraphService {
   }
 
   private Integer searchStops(
-      int count, Node source, Node target, Integer stops, Integer maxStops, Integer comparator) {
+      int count,
+      Node source,
+      Node target,
+      Integer currStops,
+      Integer prevStops,
+      Integer maxStops,
+      Integer comparator) {
+    if (source.getNeighbors().size() > 1) {
+      prevStops = currStops;
+    }
+
+    source.shiftEdgesToTarget(target);
+
     for (Edge edge : source.getNeighbors()) {
       Node neighbor = edge.getTarget();
-      int total = stops + 1;
 
-      if (total > maxStops) {
+      if (currStops > maxStops) {
         break;
       }
+
+      currStops++;
 
       boolean compare = false;
 
       switch (comparator) {
         case 0:
-          compare = total == maxStops;
+          compare = currStops.equals(maxStops);
           break;
         case 1:
-          compare = total < maxStops;
+          compare = currStops < maxStops;
           break;
         case 2:
-          compare = total <= maxStops;
+          compare = currStops <= maxStops;
           break;
       }
 
@@ -128,7 +128,9 @@ public class GraphService {
         count++;
       }
 
-      count = searchStops(count, neighbor, target, total, maxStops, comparator);
+      count = searchStops(count, neighbor, target, currStops, prevStops, maxStops, comparator);
+
+      currStops = prevStops;
     }
 
     return count;
@@ -138,28 +140,36 @@ public class GraphService {
       int count,
       Node source,
       Node target,
-      Integer distance,
+      Integer currDistance,
+      Integer prevDistance,
       Integer maxDistance,
       Integer comparator) {
+    if (source.getNeighbors().size() > 1) {
+      prevDistance = currDistance;
+    }
+
+    source.shiftEdgesToTarget(target);
+
     for (Edge edge : source.getNeighbors()) {
       Node neighbor = edge.getTarget();
-      int total = distance + edge.getWeight();
 
-      if (total > maxDistance) {
+      if (currDistance > maxDistance) {
         break;
       }
+
+      currDistance += source.getWeight(neighbor);
 
       boolean compare = false;
 
       switch (comparator) {
         case 0:
-          compare = total == maxDistance;
+          compare = currDistance.equals(maxDistance);
           break;
         case 1:
-          compare = total < maxDistance;
+          compare = currDistance < maxDistance;
           break;
         case 2:
-          compare = total <= maxDistance;
+          compare = currDistance <= maxDistance;
           break;
       }
 
@@ -167,7 +177,11 @@ public class GraphService {
         count++;
       }
 
-      count = searchDistance(count, neighbor, target, total, maxDistance, comparator);
+      count =
+          searchDistance(
+              count, neighbor, target, currDistance, prevDistance, maxDistance, comparator);
+
+      currDistance = prevDistance;
     }
 
     return count;
