@@ -23,7 +23,7 @@ public class GraphService {
 
     for (int i = 0; i < path.size() - 1; i++) {
       try {
-        totalDistance += nodes.get(i).getWeight(nodes.get(i + 1));
+        totalDistance += nodes.get(i).getWeight(nodes.get(i + 1), 0);
       } catch (NoSuchElementException ex) {
         return ex.getMessage();
       }
@@ -36,10 +36,7 @@ public class GraphService {
       final String sourceNode, final String targetNode) {
     Node source = graph.get(sourceNode);
     Node target = graph.get(targetNode);
-    if (source.equals(target)) {
-      return searchMinDistanceLoop(Integer.MAX_VALUE, source, target, 0);
-    }
-    return searchMinDistance(Integer.MAX_VALUE, source, target, 0);
+    return searchMinDistance(Integer.MAX_VALUE, 0, source, target);
   }
 
   public Integer findNumberOfPathsBetweenTwoNodesGivenDistance(
@@ -57,38 +54,22 @@ public class GraphService {
   }
 
   private Integer searchMinDistance(
-      Integer minDistance, Node source, Node target, Integer distance) {
+      Integer minDistance, Integer currentDistance, Node source, Node target) {
     for (Edge edge : source.getNeighbors()) {
       Node neighbor = edge.getTarget();
-      int total = distance + edge.getWeight();
 
       if (source.equals(target)) {
+        currentDistance = 0;
+      }
+
+      currentDistance += source.getWeight(neighbor, 1) + neighbor.getWeight(source, 1);
+
+      if (neighbor.equals(target)) {
+        minDistance = Math.min(currentDistance, minDistance);
         break;
       }
 
-      if (neighbor.equals(target) && total < minDistance) {
-        minDistance = total;
-        break;
-      }
-
-      minDistance = searchMinDistance(minDistance, neighbor, target, total);
-    }
-
-    return minDistance;
-  }
-
-  private Integer searchMinDistanceLoop(
-      Integer minDistance, Node source, Node target, Integer distance) {
-    for (Edge edge : source.getNeighbors()) {
-      Node neighbor = edge.getTarget();
-      int total = distance + edge.getWeight();
-
-      if (neighbor.equals(target) && total < minDistance) {
-        minDistance = total;
-        break;
-      }
-
-      minDistance = searchMinDistanceLoop(minDistance, neighbor, target, total);
+      minDistance = searchMinDistance(minDistance, currentDistance, neighbor, target);
     }
 
     return minDistance;
