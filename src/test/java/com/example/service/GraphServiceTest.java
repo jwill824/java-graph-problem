@@ -67,7 +67,27 @@ public class GraphServiceTest {
   }
 
   @Test
+  public void findShortestPathBetweenTwoNodes_Given_AB_Expect_5() {
+    assertEquals(5, service.findShortestDistanceBetweenTwoNodes("A", "B").intValue());
+  }
+
+  @Test
   public void findShortestPathBetweenTwoNodes_Given_AC_Expect_9() {
     assertEquals(9, service.findShortestDistanceBetweenTwoNodes("A", "C").intValue());
+  }
+
+  @Test
+  public void findShortestPathBetweenTwoNodes_Given_AD_Expect_5() {
+    assertEquals(5, service.findShortestDistanceBetweenTwoNodes("A", "D").intValue());
+  }
+
+  @Test
+  public void findShortestPathBetweenTwoNodes_Given_AE_Expect_7() {
+    assertEquals(7, service.findShortestDistanceBetweenTwoNodes("A", "E").intValue());
+  }
+
+  @Test
+  public void findShortestPathBetweenTwoNodes_Given_DD_Expect_16() {
+    assertEquals(16, service.findShortestDistanceBetweenTwoNodes("D", "D").intValue());
   }
 }
