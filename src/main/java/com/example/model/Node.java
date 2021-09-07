@@ -13,6 +13,7 @@ public class Node {
 
   private String name;
   private List<Edge> neighbors;
+  private int prevDistance = 0;
 
   public Node(final String name) {
     this.name = name;
@@ -24,7 +25,7 @@ public class Node {
     neighbors.add(edge);
   }
 
-  public int getWeight(final Node destination, final int override) {
+  public int getWeight(final Node destination) {
     Optional<Edge> edge =
         neighbors.stream()
             .filter(neighbor -> neighbor.getTarget().getName().equals(destination.getName()))
@@ -34,11 +35,7 @@ public class Node {
       return edge.get().getWeight();
     }
 
-    if (override == 0) {
-      throw new NoSuchElementException("NO SUCH ROUTE");
-    }
-
-    return 0;
+    throw new NoSuchElementException("NO SUCH ROUTE");
   }
 
   @Override

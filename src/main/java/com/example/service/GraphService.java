@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.beust.jcommander.internal.Lists;
 import com.example.model.Edge;
 import com.example.model.Node;
 import java.util.List;
@@ -23,7 +24,7 @@ public class GraphService {
 
     for (int i = 0; i < path.size() - 1; i++) {
       try {
-        totalDistance += nodes.get(i).getWeight(nodes.get(i + 1), 0);
+        totalDistance += nodes.get(i).getWeight(nodes.get(i + 1));
       } catch (NoSuchElementException ex) {
         return ex.getMessage();
       }
@@ -36,7 +37,7 @@ public class GraphService {
       final String sourceNode, final String targetNode) {
     Node source = graph.get(sourceNode);
     Node target = graph.get(targetNode);
-    return searchMinDistance(Integer.MAX_VALUE, 0, source, target);
+    return searchMinDistance(Integer.MAX_VALUE, 0, 0, source, target);
   }
 
   public Integer findNumberOfPathsBetweenTwoNodesGivenDistance(
@@ -54,22 +55,46 @@ public class GraphService {
   }
 
   private Integer searchMinDistance(
-      Integer minDistance, Integer currentDistance, Node source, Node target) {
+      Integer minDistance, Integer currDistance, Integer prevDistance, Node source, Node target) {
+
+    if (source.getNeighbors().size() > 1) {
+      prevDistance = currDistance;
+    }
+
+    // re-arrange neighbors list to add node that matches target first
+    if (source.getNeighbors().stream().anyMatch(e -> e.getTarget().equals(target))) {
+      Edge edge =
+          source.getNeighbors().stream()
+              .filter(e -> e.getTarget().equals(target))
+              .findFirst()
+              .get();
+      List<Edge> others =
+          source.getNeighbors().stream()
+              .filter(e -> !e.getTarget().equals(target))
+              .collect(Collectors.toList());
+      List<Edge> edges = Lists.newArrayList();
+      edges.add(edge);
+      edges.addAll(others);
+      source.setNeighbors(edges);
+    }
+
     for (Edge edge : source.getNeighbors()) {
       Node neighbor = edge.getTarget();
 
-      if (source.equals(target)) {
-        currentDistance = 0;
-      }
-
-      currentDistance += source.getWeight(neighbor, 1) + neighbor.getWeight(source, 1);
-
-      if (neighbor.equals(target)) {
-        minDistance = Math.min(currentDistance, minDistance);
+      if (currDistance > minDistance) {
         break;
       }
 
-      minDistance = searchMinDistance(minDistance, currentDistance, neighbor, target);
+      currDistance += source.getWeight(neighbor);
+
+      if (neighbor.equals(target)) {
+        minDistance = Math.min(currDistance, minDistance);
+        break;
+      }
+
+      minDistance = searchMinDistance(minDistance, currDistance, prevDistance, neighbor, target);
+
+      currDistance = prevDistance;
     }
 
     return minDistance;
