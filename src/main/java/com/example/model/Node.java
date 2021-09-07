@@ -9,11 +9,10 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class Node implements Comparable<Node> {
+public class Node {
 
   private String name;
   private List<Edge> neighbors;
-  private int minDistance = Integer.MAX_VALUE;
 
   public Node(final String name) {
     this.name = name;
@@ -25,26 +24,25 @@ public class Node implements Comparable<Node> {
     neighbors.add(edge);
   }
 
-  public int getWeight(final Node destination) {
+  public int getWeight(final Node destination, final int override) {
     Optional<Edge> edge =
         neighbors.stream()
             .filter(neighbor -> neighbor.getTarget().getName().equals(destination.getName()))
             .findFirst();
 
-    if (!edge.isPresent()) {
+    if (edge.isPresent()) {
+      return edge.get().getWeight();
+    }
+
+    if (override == 0) {
       throw new NoSuchElementException("NO SUCH ROUTE");
     }
 
-    return edge.get().getWeight();
+    return 0;
   }
 
   @Override
   public String toString() {
     return name;
-  }
-
-  @Override
-  public int compareTo(Node other) {
-    return Double.compare(this.minDistance, other.minDistance);
   }
 }
